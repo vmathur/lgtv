@@ -23,9 +23,15 @@ var config = {
 firebase.initializeApp(config);
 var tvInput = firebase.database().ref('tv-input');
 var tvVolume = firebase.database().ref('tv-volume');
+var tvOff = firebase.database().ref('tv-off');
+
 var retry_timeout = 60; // seconds 
 
-lgtv.discover_ip(retry_timeout, function(err, tv_ip_address) {
+var tv_ip_address = process.argv[2]|| "192.168.0.113";
+console.log("ip address is :"+tv_ip_address);
+console.log("starting discovery");
+
+lgtv.connect(tv_ip_address, function(err, response){
 	if (err) {
 		console.log("Failed to find TV IP address on the LAN. Verify that TV is on, and that you are on the same LAN/Wifi.");
 	} else {
@@ -43,6 +49,13 @@ lgtv.discover_ip(retry_timeout, function(err, tv_ip_address) {
 				var volume = snapshot.val().value;
 				console.log(volume);
 				changeVolume(tv_ip_address,volume)
+			});
+			
+			tvOff.on('value', function(snapshot) {
+				var off = snapshot.val().value;
+				console.log(off);
+				lgtv.turn_off();
+				//to test
 			});
 
 		});
