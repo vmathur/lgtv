@@ -38,18 +38,32 @@ function setVolume(intent, session, callback) {
     callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
+function shutOff(intent, session, callback) {
+    const cardTitle = intent.name;
+    let speechOutput = 'turning off';
+    let repromptText = 'keep testin';
+    const shouldEndSession = true;
+    updateFirebase('tv-off',true);
+    // updateFirebase('tv-off','False');
+    let sessionAttributes = {};
+
+    callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
 
 function updateFirebase(field,input){
     var url = "https://alexa-tv-control.firebaseio.com/"+field+".json";
     request({
         url: url,
         method: "PUT",
-        json: true,   // <--Very important!!!
+        json: true,
         body: {"value":input}
     }, function (error, response, body){
-        if(error) console.log(error);
+        if(input){
+            updateFirebase('tv-off',false);
+        }
     });
 }
+
 // --------------- Events -----------------------
 
 /**
@@ -75,8 +89,9 @@ function onIntent(intentRequest, session, callback) {
         setInput(intent, session, callback);
     } else if (intentName === 'SetVolume'){
         setVolume(intent, session, callback);
-    }
-    else {
+    } else if (intentName === 'ShutOff'){
+        shutOff(intent, session, callback);
+    } else {
         throw new Error('Invalid intent');
     }
 }
