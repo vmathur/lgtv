@@ -42,23 +42,29 @@ lgtv.connect(tv_ip_address, function(err, response){
 		
 			if (!err)
 			tvInput.on('value', function(snapshot) {
-				var input = snapshot.val().value;
-				console.log(inputMapper[input]);
-				changeInput(tv_ip_address,inputMapper[input])
+				if(snapshot.val()){
+					var input = snapshot.val().value;
+					console.log(inputMapper[input]);
+					changeInput(tv_ip_address,inputMapper[input]);
+				}
 			});
 		
 			tvVolume.on('value', function(snapshot) {
-				var volume = snapshot.val().value;
-				console.log(volume);
-				changeVolume(tv_ip_address,volume)
+				if(snapshot.val()){
+					var volume = snapshot.val().value;
+					console.log(volume);
+					changeVolume(tv_ip_address,volume);
+				}
 			});
 			
 			tvOff.on('value', function(snapshot) {
-				var off = snapshot.val().value;
-				console.log(off);
-				if(off){
-					console.log('turning off');
-					lgtv.turn_off();	
+				if(snapshot.val()){
+					var off = snapshot.val().value;
+					console.log(off);
+					if(off){
+						console.log('turning off');
+						lgtv.turn_off();	
+					}					
 				}
 			});
 
