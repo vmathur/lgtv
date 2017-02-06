@@ -38,6 +38,8 @@ lgtv.connect(tv_ip_address, function(err, response){
 	  	console.log("TV ip addr is: " + tv_ip_address);
 		
 		lgtv.connect(tv_ip_address, function(err, response){
+		  	lgtv.show_float("Alexa connected", function(err, response){});
+		
 			if (!err)
 			tvInput.on('value', function(snapshot) {
 				var input = snapshot.val().value;
@@ -54,8 +56,10 @@ lgtv.connect(tv_ip_address, function(err, response){
 			tvOff.on('value', function(snapshot) {
 				var off = snapshot.val().value;
 				console.log(off);
-				lgtv.turn_off();
-				//to test
+				if(off){
+					console.log('turning off');
+					lgtv.turn_off();	
+				}
 			});
 
 		});
