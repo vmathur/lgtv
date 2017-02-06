@@ -5,10 +5,12 @@ var lgtv = require("lgtv");
 var firebase = require("firebase");
 
 var inputMapper = {
-	'live' : "LIVE",
-	'1'    : "HDMI_1",
-	'2'    : "HDMI_2",
-	'3'    : "HDMI_3"
+	'live'        : "LIVE",
+	'1'           : "HDMI_1",
+	'2'           : "HDMI_2",
+	'XBOX'        : "HDMI_2",
+	'PLAYSTATION' : "HDMI_3",
+	'3'           : "HDMI_3"
 }
 
 var config = {
