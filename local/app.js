@@ -1,10 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var request = require('request');
 var app = express();
 var lgtv = require("lgtv");
 var firebase = require("firebase");
-var request = require('request')
 
 var inputMapper = {
 	'live' : "LIVE",
@@ -25,8 +23,6 @@ var tvInput = firebase.database().ref('tv-input');
 var tvVolume = firebase.database().ref('tv-volume');
 var tvOff = firebase.database().ref('tv-off');
 
-var retry_timeout = 60; // seconds 
-
 var tv_ip_address = process.argv[2]|| "192.168.0.113";
 console.log("ip address is :"+tv_ip_address);
 console.log("starting discovery");
@@ -34,65 +30,47 @@ console.log("starting discovery");
 lgtv.connect(tv_ip_address, function(err, response){
 	if (err) {
 		console.log("Failed to find TV IP address on the LAN. Verify that TV is on, and that you are on the same LAN/Wifi.");
-	} else {
-	  	console.log("TV ip addr is: " + tv_ip_address);
+	} else {		
+		lgtv.show_float("Alexa connected", function(err, response){});
+	
+		if (!err)
+		tvInput.on('value', function(snapshot) {
+			if(snapshot.val()){
+				var input = snapshot.val().value;
+				console.log(inputMapper[input]);
+				changeInput(tv_ip_address,inputMapper[input]);
+			}
+		});
+	
+		tvVolume.on('value', function(snapshot) {
+			if(snapshot.val()){
+				var volume = snapshot.val().value;
+				console.log(volume);
+				changeVolume(tv_ip_address,volume);
+			}
+		});
 		
-		lgtv.connect(tv_ip_address, function(err, response){
-		  	lgtv.show_float("Alexa connected", function(err, response){});
-		
-			if (!err)
-			tvInput.on('value', function(snapshot) {
-				if(snapshot.val()){
-					var input = snapshot.val().value;
-					console.log(inputMapper[input]);
-					changeInput(tv_ip_address,inputMapper[input]);
-				}
-			});
-		
-			tvVolume.on('value', function(snapshot) {
-				if(snapshot.val()){
-					var volume = snapshot.val().value;
-					console.log(volume);
-					changeVolume(tv_ip_address,volume);
-				}
-			});
-			
-			tvOff.on('value', function(snapshot) {
-				if(snapshot.val()){
-					var off = snapshot.val().value;
-					console.log(off);
-					if(off){
-						console.log('turning off');
-						lgtv.turn_off();	
-					}					
-				}
-			});
-
+		tvOff.on('value', function(snapshot) {
+			if(snapshot.val()){
+				var off = snapshot.val().value;
+				console.log(off);
+				if(off){
+					console.log('turning off');
+					lgtv.turn_off();	
+				}					
+			}
 		});
   }
 });
 
 function changeInput(tv_ip_address,input){
 	if(input){
-		// lgtv.connect(tv_ip_address, function(err, response){
-		  // if (!err) {
-		  	lgtv.show_float("Changing input to "+input, function(err, response){
-		    });
-		    if(input=='LIVE'){
-		    	lgtv.start_app("com.webos.app.livetv", function(err, response){
-	            	// if (!err) {
-	            	// 	lgtv.disconnect();
-	            	// }
-	            });
-		    }else{
-			    lgtv.set_input(input, function(err, response){
-			     //    if (!err) {
-			     //   		lgtv.disconnect();
-			    	// }
-			    });
-		    }
-		  // }
-		// });
+		lgtv.show_float("Changing input to "+input, function(err, response){});
+		if(input=='LIVE'){
+		 	lgtv.start_app("com.webos.app.livetv", function(err, response){});
+		}else{
+    		lgtv.set_input(input, function(err, response){});
+		}
 	}
 }
 
@@ -101,10 +79,7 @@ function changeVolume(tv_ip_address,volume){
 		lgtv.connect(tv_ip_address, function(err, response){
 	        if (!err) {
 	           console.log("setting volume to:" + volume);
-
-	           lgtv.set_volume(Number(volume), function(err, response){
-	               // lgtv.disconnect();
-	           });
+	           lgtv.set_volume(Number(volume), function(err, response){});
 	        }
 	    });
 	}
@@ -115,7 +90,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.get('/', function (req, res) {
-    res.send('Hello world');
+    res.send('Alexa LGTV control');
 });
 
 app.use(bodyParser.urlencoded({extended: false}));
