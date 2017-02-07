@@ -38,13 +38,28 @@ function setVolume(intent, session, callback) {
     callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
+function changeVolume(intent, session, change, callback) {
+    const cardTitle = intent.name;
+    var speechOutput = " ";
+    if(change>0){
+        speechOutput = 'turning up';
+    }else{
+        speechOutput = 'turning down';        
+    }
+    let repromptText = 'keep testin';
+    const shouldEndSession = true; 
+    updateFirebase('tv-volume-change',change);
+    let sessionAttributes = {};
+
+    callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
 function shutOff(intent, session, callback) {
     const cardTitle = intent.name;
     let speechOutput = 'turning off';
     let repromptText = 'keep testin';
     const shouldEndSession = true;
     updateFirebase('tv-off',true);
-    // updateFirebase('tv-off','False');
     let sessionAttributes = {};
 
     callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
@@ -91,6 +106,10 @@ function onIntent(intentRequest, session, callback) {
         setVolume(intent, session, callback);
     } else if (intentName === 'ShutOff'){
         shutOff(intent, session, callback);
+    } else if (intentName === 'IncreaseVolume'){
+        changeVolume(intent, session, 1, callback);
+    } else if (intentName === 'DecreaseVolume'){
+        changeVolume(intent, session, -1, callback);
     } else {
         throw new Error('Invalid intent');
     }
