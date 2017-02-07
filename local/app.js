@@ -8,8 +8,8 @@ var inputMapper = {
 	'live'        : "LIVE",
 	'1'           : "HDMI_1",
 	'2'           : "HDMI_2",
-	'XBOX'        : "HDMI_2",
-	'PLAYSTATION' : "HDMI_3",
+	'Xbox'        : "HDMI_2",
+	'PlayStation' : "HDMI_3",
 	'3'           : "HDMI_3"
 }
 
