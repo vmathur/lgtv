@@ -24,8 +24,11 @@ firebase.initializeApp(config);
 var tvInput = firebase.database().ref('tv-input');
 var tvVolume = firebase.database().ref('tv-volume');
 var tvOff = firebase.database().ref('tv-off');
+var tvVolumeChange = firebase.database().ref('tv-volume-change');
 
 var tv_ip_address = process.argv[2]|| "192.168.0.113";
+var VOLUME_CHANGE = 5;
+
 console.log("ip address is :"+tv_ip_address);
 console.log("starting discovery");
 
@@ -47,7 +50,6 @@ lgtv.connect(tv_ip_address, function(err, response){
 		tvVolume.on('value', function(snapshot) {
 			if(snapshot.val()){
 				var volume = snapshot.val().value;
-				console.log(volume);
 				changeVolume(tv_ip_address,volume);
 			}
 		});
@@ -55,11 +57,24 @@ lgtv.connect(tv_ip_address, function(err, response){
 		tvOff.on('value', function(snapshot) {
 			if(snapshot.val()){
 				var off = snapshot.val().value;
-				console.log(off);
 				if(off){
+					tvOff.set({"value":false})
 					console.log('turning off');
 					lgtv.turn_off();	
 				}					
+			}
+		});
+
+		tvVolumeChange.on('value', function(snapshot) {
+			if(snapshot.val()){
+				console.log('changing volume');
+				var change = snapshot.val().value;
+				tvVolumeChange.set({"value":0})
+				lgtv.volume(function(RESULT, currentVolume){
+					var factor = parseInt(change);
+					var newVolume = currentVolume+factor*VOLUME_CHANGE;
+					changeVolume(tv_ip_address,newVolume);
+				});			
 			}
 		});
   }
@@ -78,12 +93,8 @@ function changeInput(tv_ip_address,input){
 
 function changeVolume(tv_ip_address,volume){
 	if(volume){
-		lgtv.connect(tv_ip_address, function(err, response){
-	        if (!err) {
-	           console.log("setting volume to:" + volume);
-	           lgtv.set_volume(Number(volume), function(err, response){});
-	        }
-	    });
+	    console.log("setting volume to:" + volume);
+	    lgtv.set_volume(Number(volume), function(err, response){});
 	}
 }
 

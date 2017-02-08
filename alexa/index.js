@@ -73,9 +73,6 @@ function updateFirebase(field,input){
         json: true,
         body: {"value":input}
     }, function (error, response, body){
-        if(input){
-            updateFirebase('tv-off',false);
-        }
     });
 }
 
