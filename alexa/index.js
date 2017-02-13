@@ -65,6 +65,17 @@ function shutOff(intent, session, callback) {
     callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
+function turnOn(intent, session, callback) {
+    const cardTitle = intent.name;
+    let speechOutput = 'turning on';
+    let repromptText = 'keep testin';
+    const shouldEndSession = true;
+    updateFirebase('tv-on',true);
+    let sessionAttributes = {};
+
+    callback(sessionAttributes,buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
 function updateFirebase(field,input){
     var url = "https://alexa-tv-control.firebaseio.com/"+field+".json";
     request({
@@ -103,6 +114,8 @@ function onIntent(intentRequest, session, callback) {
         setVolume(intent, session, callback);
     } else if (intentName === 'ShutOff'){
         shutOff(intent, session, callback);
+    } else if (intentName === 'TurnOn'){
+        turnOn(intent, session, callback);
     } else if (intentName === 'IncreaseVolume'){
         changeVolume(intent, session, 1, callback);
     } else if (intentName === 'DecreaseVolume'){

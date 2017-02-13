@@ -3,6 +3,11 @@ var bodyParser = require('body-parser');
 var app = express();
 var lgtv = require("lgtv");
 var firebase = require("firebase");
+var firebaseConfig = require("./firebaseConfig").config;
+var Client = require('castv2').Client;
+var mdns = require('mdns');
+
+var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
 var inputMapper = {
 	'live'        : "LIVE",
@@ -13,24 +18,34 @@ var inputMapper = {
 	'3'           : "HDMI_3"
 }
 
-var config = {
-	apiKey: "AIzaSyBUrl9DLkJ6mBjuXEkDdDEF3twi8Zpf5xc",
-	authDomain: "alexa-tv-control.firebaseapp.com",
-	databaseURL: "https://alexa-tv-control.firebaseio.com",
-	storageBucket: "alexa-tv-control.appspot.com"
-};
-
-firebase.initializeApp(config);
+firebase.initializeApp(firebaseConfig);
 var tvInput = firebase.database().ref('tv-input');
 var tvVolume = firebase.database().ref('tv-volume');
 var tvOff = firebase.database().ref('tv-off');
+var tvOn = firebase.database().ref('tv-on');
 var tvVolumeChange = firebase.database().ref('tv-volume-change');
 
 var tv_ip_address = process.argv[2]|| "192.168.0.113";
+var chromeCastIp = "192.168.0.106";
 var VOLUME_CHANGE = 5;
 
-console.log("ip address is :"+tv_ip_address);
-console.log("starting discovery");
+console.log("starting chromecast discovery");
+browser.start();
+
+console.log("tv ip address is :"+tv_ip_address);
+console.log("starting tv discovery");
+
+tvOn.on('value', function(snapshot) {
+	if(snapshot.val()){
+		var on = snapshot.val().value;
+		if(on){
+			tvOn.set({"value":false})
+			console.log('turning on');
+			ondeviceup(chromeCastIp);
+			changeInput(tv_ip_address,inputMapper["live"]);
+		}					
+	}
+});
 
 lgtv.connect(tv_ip_address, function(err, response){
 	if (err) {
@@ -97,6 +112,25 @@ function changeVolume(tv_ip_address,volume){
 	    lgtv.set_volume(Number(volume), function(err, response){});
 	}
 }
+
+function ondeviceup(host) {
+  var client = new Client();
+  client.connect(host, function() {
+    // create various namespace handlers
+    var connection = client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
+    var receiver   = client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.receiver', 'JSON');
+
+    // establish virtual connection to the receiver
+    connection.send({ type: 'CONNECT' });
+    receiver.send({ type: 'LAUNCH', appId: 'CC1AD845', requestId: 1 });
+  });
+}
+
+browser.on('serviceUp', function(service) {
+  console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
+  chromeCastIp = service.addresses[0];
+});
+
 
 app.use(bodyParser.urlencoded({
     extended: true
