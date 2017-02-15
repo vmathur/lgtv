@@ -8,7 +8,6 @@ var config = require("./config");
 var Client = require('castv2').Client;
 var mdns = require('mdns');
 
-var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
 
 //initialize firebase
@@ -26,6 +25,7 @@ var chromeCastIp = config.chromeCastIp;
 var VOLUME_CHANGE = 5;
 
 //connect to chromecast
+var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 console.log("starting chromecast discovery");
 browser.start();
 

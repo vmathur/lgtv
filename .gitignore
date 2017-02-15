@@ -1,3 +1,4 @@
 .DS_Store
 local/config.js
 local/client-key.txt
+alexa/config.js
