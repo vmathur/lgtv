@@ -1,4 +1,4 @@
 .DS_Store
-local/config.js
-local/client-key.txt
-alexa/config.js
+pi/config.js
+pi/client-key.txt
+server/config.js
